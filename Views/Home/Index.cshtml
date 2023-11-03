@@ -1,0 +1,34 @@
+﻿@{
+    ViewData["Title"] = "Generar y enviar PDF desde TinyMCE";
+}
+
+<h2>Generar y enviar PDF desde TinyMCE</h2>
+
+<textarea id="myTextarea" name="myTextarea">Contenido del PDF</textarea>
+<button onclick="sendContent()">Generar y Enviar PDF</button>
+
+@section Scripts {
+    <script src="https://cdn.tiny.cloud/1/bn4tt8vxsv2uoc95hs4mj2n5lkr9ib5z48xx1pjqg2qk40wx/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
+    <script>
+        function sendContent() {
+            var content = tinymce.get('myTextarea').getContent();
+            var xhr = new XMLHttpRequest();
+            xhr.open('POST', '@Url.Action("GenerarPDF", "/Home")');
+            xhr.setRequestHeader('Content-Type', 'application/json');
+            xhr.send(JSON.stringify({ content: content }));
+        }
+
+        tinymce.init({
+            selector: 'textarea',
+            plugins: ' autolink charmap  lists  searchreplace table visualblocks wordcount checklist casechange preview export formatpainter pageembed permanentpen advtemplate advtable advcode editimage tableofcontents powerpaste tinymcespellchecker autocorrect a11ychecker typography inlinecss',
+            toolbar: 'undo redo | fontfamily fontsize | bold italic underline strikethrough |  table  | align lineheight | tinycomments | checklist numlist bullist indent outdent | preview | export',
+            tinycomments_mode: 'embedded',
+            tinycomments_author: 'Author name',
+            mergetags_list: [
+                { value: 'First.Name', title: 'First Name' },
+                { value: 'Email', title: 'Email' },
+            ],
+            ai_request: (request, respondWith) => respondWith.string(() => Promise.reject("See docs to implement AI Assistant")),
+        });
+    </script>
+}
