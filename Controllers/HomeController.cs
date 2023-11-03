@@ -1,13 +1,12 @@
 ﻿using MiAplicacion.Models;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
-
 using iText.Kernel.Pdf;
 using iText.Layout;
 using iText.Layout.Element;
-
 using iText.Html2pdf;
 using System.Text.Json;
+
 
 namespace MiAplicacion.Controllers
 {
@@ -25,66 +24,8 @@ namespace MiAplicacion.Controllers
             return View();
         }
 
-        [HttpPost]
-        public async Task<IActionResult> GuardarPDF()
-        {
-            try
-            {
-                string requestBody;
-                using (var reader = new StreamReader(Request.Body))
-                {
-                    requestBody = await reader.ReadToEndAsync();
-                }
 
-                var filePath = Path.Combine(_hostingEnvironment.WebRootPath, "PDFs", "archivo.pdf");
-                using (FileStream fs = new FileStream(filePath, FileMode.Create))
-                {
-                    await fs.WriteAsync(Convert.FromBase64String(requestBody));
-                }
-                return Ok();
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, $"Se produjo un error al guardar el PDF: {ex.Message}");
-            }
-        }
-
-        //[HttpPost]
-        //public async Task<IActionResult> GenerarPDF()
-        // {
-        //    try
-        //    {
-        //        using var reader = new StreamReader(Request.Body);
-        //        var requestBody = await reader.ReadToEndAsync();
-        //        Console.WriteLine(requestBody); // Agrega esta línea para imprimir el contenido del objeto JSON en la consola
-
-        //        var jsonDocument = JsonDocument.Parse(requestBody);
-        //        var content = jsonDocument.RootElement.GetProperty("content").GetString();
-
-        //        var directoryPath = Path.Combine(_hostingEnvironment.WebRootPath, "PDFs");
-        //        var filePath = Path.Combine(directoryPath, "archivo.pdf");
-
-        //        if (!Directory.Exists(directoryPath))
-        //        {
-        //            Directory.CreateDirectory(directoryPath);
-        //        }
-
-        //        using (var writer = new PdfWriter(filePath))
-        //        {
-        //            using (var pdf = new PdfDocument(writer))
-        //            {
-        //                var document = new Document(pdf);
-        //                document.Add(new Paragraph(content));
-        //            }
-        //        }
-        //        return Ok();
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        return StatusCode(500, $"Se produjo un error al generar el PDF: {ex.Message}");
-        //    }
-        //}
-
+        //codigo funciona que el formato
         [HttpPost]
         public async Task<IActionResult> GenerarPDF()
         {
@@ -98,7 +39,7 @@ namespace MiAplicacion.Controllers
                 var cleanedContent = content.Replace("\\n", "\n").Trim(); // Limpiar saltos de línea y caracteres de escape
                 var finalContent = cleanedContent.Replace("\n", string.Empty).Replace("\r", string.Empty); // Eliminar saltos de línea
 
-                var filePath = Path.Combine(_hostingEnvironment.WebRootPath, "PDFs", "archivo.pdf");
+                var filePath = System.IO.Path.Combine(_hostingEnvironment.WebRootPath, "PDFs", "archivo.pdf");
                 using (var writer = new PdfWriter(filePath))
                 {
                     using (var pdf = new PdfDocument(writer))
@@ -121,6 +62,7 @@ namespace MiAplicacion.Controllers
                 return StatusCode(500, $"Se produjo un error al generar el PDF: {ex.Message}");
             }
         }
+
 
 
 
