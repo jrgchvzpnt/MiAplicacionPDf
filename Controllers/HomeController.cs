@@ -6,6 +6,8 @@ using iText.Layout;
 using iText.Layout.Element;
 using iText.Html2pdf;
 using System.Text.Json;
+using Microsoft.AspNetCore.Hosting.Server;
+using Org.BouncyCastle.Asn1.Ocsp;
 
 
 namespace MiAplicacion.Controllers
@@ -22,6 +24,41 @@ namespace MiAplicacion.Controllers
         public IActionResult Index()
         {
             return View();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> RecibirPDF(IFormFile file)
+        {
+            try
+            {
+                if (file != null && file.Length > 0)
+                {
+                    var uploads = Path.Combine(_hostingEnvironment.WebRootPath, "PDFs"); // Ruta donde se guardarán los archivos PDF
+
+                    if (!Directory.Exists(uploads))
+                    {
+                        Directory.CreateDirectory(uploads);
+                    }
+
+                    var filePath = Path.Combine(uploads, file.FileName);
+
+                    using (var stream = new FileStream(filePath, FileMode.Create))
+                    {
+                        await file.CopyToAsync(stream);
+                    }
+
+                    return Content("Archivo PDF guardado correctamente en el servidor.");
+                }
+                else
+                {
+                    return Content("No se recibió ningún archivo PDF.");
+                }
+            }
+            catch (Exception ex)
+            {
+                // Manejar cualquier excepción que pueda ocurrir durante el proceso de guardado
+                return Content("Ocurrió un error al guardar el archivo PDF en el servidor: " + ex.Message);
+            }
         }
 
 

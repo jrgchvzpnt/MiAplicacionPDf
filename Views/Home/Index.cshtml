@@ -6,9 +6,12 @@
 
 <textarea id="myTextarea" name="myTextarea">Contenido del PDF</textarea>
 <button onclick="sendContent()">Generar y Enviar PDF</button>
+<button onclick="pdf()">Generar</button>
+
 
 @section Scripts {
     <script src="https://cdn.tiny.cloud/1/bn4tt8vxsv2uoc95hs4mj2n5lkr9ib5z48xx1pjqg2qk40wx/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
     <script>
         function sendContent() {
             var content = tinymce.get('myTextarea').getContent();
@@ -17,6 +20,36 @@
             xhr.setRequestHeader('Content-Type', 'application/json');
             xhr.send(JSON.stringify({ content: content }));
         }
+
+        function pdf() {
+            var pdf = tinymce.activeEditor.plugins.export.convert('clientpdf', {});
+            pdf.then(function (result) {
+                // Enviar el resultado al servidor
+                var formData = new FormData();
+                formData.append('file', result, 'archivo.pdf'); // Ajusta el nombre del archivo según sea necesario
+
+                fetch('/Home/RecibirPDF', {
+                    method: 'POST',
+                    body: formData
+                })
+                    .then(response => response.text())
+                    .then(data => {
+                        // Manejar la respuesta del servidor si es necesario
+                        console.log(data);
+                    })
+                    .catch(error => {
+                        // Manejar cualquier error de la solicitud
+                        console.error('Error al enviar los datos al servidor:', error);
+                    });
+            }).catch(function (error) {
+                // Manejar cualquier error que ocurra durante la conversión
+                console.error('Error durante la conversión a PDF:', error);
+            });
+
+        }
+
+        
+
 
         tinymce.init({
             selector: 'textarea',
