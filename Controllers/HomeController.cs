@@ -5,8 +5,9 @@ using System.Diagnostics;
 using iText.Kernel.Pdf;
 using iText.Layout;
 using iText.Layout.Element;
-using System.Text.Json;
 
+using iText.Html2pdf;
+using System.Text.Json;
 
 namespace MiAplicacion.Controllers
 {
@@ -48,32 +49,69 @@ namespace MiAplicacion.Controllers
             }
         }
 
+        //[HttpPost]
+        //public async Task<IActionResult> GenerarPDF()
+        // {
+        //    try
+        //    {
+        //        using var reader = new StreamReader(Request.Body);
+        //        var requestBody = await reader.ReadToEndAsync();
+        //        Console.WriteLine(requestBody); // Agrega esta línea para imprimir el contenido del objeto JSON en la consola
+
+        //        var jsonDocument = JsonDocument.Parse(requestBody);
+        //        var content = jsonDocument.RootElement.GetProperty("content").GetString();
+
+        //        var directoryPath = Path.Combine(_hostingEnvironment.WebRootPath, "PDFs");
+        //        var filePath = Path.Combine(directoryPath, "archivo.pdf");
+
+        //        if (!Directory.Exists(directoryPath))
+        //        {
+        //            Directory.CreateDirectory(directoryPath);
+        //        }
+
+        //        using (var writer = new PdfWriter(filePath))
+        //        {
+        //            using (var pdf = new PdfDocument(writer))
+        //            {
+        //                var document = new Document(pdf);
+        //                document.Add(new Paragraph(content));
+        //            }
+        //        }
+        //        return Ok();
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return StatusCode(500, $"Se produjo un error al generar el PDF: {ex.Message}");
+        //    }
+        //}
+
         [HttpPost]
         public async Task<IActionResult> GenerarPDF()
-         {
+        {
             try
             {
                 using var reader = new StreamReader(Request.Body);
                 var requestBody = await reader.ReadToEndAsync();
-                Console.WriteLine(requestBody); // Agrega esta línea para imprimir el contenido del objeto JSON en la consola
-                
                 var jsonDocument = JsonDocument.Parse(requestBody);
                 var content = jsonDocument.RootElement.GetProperty("content").GetString();
 
-                var directoryPath = Path.Combine(_hostingEnvironment.WebRootPath, "PDFs");
-                var filePath = Path.Combine(directoryPath, "archivo.pdf");
+                var cleanedContent = content.Replace("\\n", "\n").Trim(); // Limpiar saltos de línea y caracteres de escape
+                var finalContent = cleanedContent.Replace("\n", string.Empty).Replace("\r", string.Empty); // Eliminar saltos de línea
 
-                if (!Directory.Exists(directoryPath))
-                {
-                    Directory.CreateDirectory(directoryPath);
-                }
-
+                var filePath = Path.Combine(_hostingEnvironment.WebRootPath, "PDFs", "archivo.pdf");
                 using (var writer = new PdfWriter(filePath))
                 {
                     using (var pdf = new PdfDocument(writer))
                     {
                         var document = new Document(pdf);
-                        document.Add(new Paragraph(content));
+                        var htmlContent = finalContent; // Tu contenido HTML aquí
+
+                        var page = pdf.AddNewPage(); // Agregar una nueva página al documento
+                        var elements = HtmlConverter.ConvertToElements(htmlContent);
+                        foreach (var element in elements)
+                        {
+                            document.Add((IBlockElement)element);
+                        }
                     }
                 }
                 return Ok();
@@ -83,6 +121,7 @@ namespace MiAplicacion.Controllers
                 return StatusCode(500, $"Se produjo un error al generar el PDF: {ex.Message}");
             }
         }
+
 
 
 
