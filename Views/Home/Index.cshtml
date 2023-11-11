@@ -5,12 +5,15 @@
 <h2>Generar y enviar PDF desde TinyMCE</h2>
 
 <textarea id="myTextarea" name="myTextarea">Contenido del PDF</textarea>
-<button onclick="sendContent()">Generar y Enviar PDF</button>
 <button onclick="pdf()">Generar</button>
-<button onclick="cargarContenido()">Cargar Documento word</button>
+<button onclick="pdf2()">PDF 2</button>
+
 
 @section Scripts {
-    <script src="https://cdn.tiny.cloud/1/g2ldbjzxmnlz2eni76krjw63uzjywfzj9fpj6hgiub1g7dyw/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
+    @* <script src="https://cdn.tiny.cloud/1/bn4tt8vxsv2uoc95hs4mj2n5lkr9ib5z48xx1pjqg2qk40wx/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script> *@
+    <script src="https://cdn.tiny.cloud/1/g2ldbjzxmnlz2eni76krjw63uzjywfzj9fpj6hgiub1g7dyw/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script>
         function sendContent() {
             var content = tinymce.get('myTextarea').getContent();
@@ -31,75 +34,84 @@
                     method: 'POST',
                     body: formData
                 })
-                .then(response => response.text())
-                .then(data => {
-                    // Manejar la respuesta del servidor si es necesario
-                    console.log(data);
-                    alert("Archivo Creado correctamente");
-                })
-                .catch(error => {
-                    // Manejar cualquier error de la solicitud
-                    console.error('Error al enviar los datos al servidor:', error);
-                });
+                    .then(response => response.text())
+                    .then(data => {
+                        // Manejar la respuesta del servidor si es necesario
+                        console.log(data);
+                    })
+                    .catch(error => {
+                        // Manejar cualquier error de la solicitud
+                        console.error('Error al enviar los datos al servidor:', error);
+                    });
             }).catch(function (error) {
                 // Manejar cualquier error que ocurra durante la conversión
                 console.error('Error durante la conversión a PDF:', error);
             });
-
         }
 
-        function cargarContenido() {
-            fetch('/Home/CargarDocumento', {
-                method: 'POST'
-            })
-                .then(response => response.text())
-                .then(data => {
-                    tinymce.activeEditor.setContent(data); // Carga el contenido en TinyMCE
-                })
-                .catch(error => {
-                    console.error('Error al cargar el documento:', error);
-                });
+        function pdf2(){
+            // Mejorar la calidad del archivo PDF
+            var pdf = new jsPDF('p', 'pt', 'a4');
+            pdf.internal.scaleFactor = 2.25;
+            pdf.addHTML(document.body, function () {
+                pdf.save('archivo_mejorado.pdf');
+            });
         }
 
 
-
-
-
+        const nombre = 'David';
         tinymce.init({
             selector: 'textarea',
             plugins: ' autolink charmap  lists  searchreplace table visualblocks wordcount checklist casechange preview export formatpainter pageembed permanentpen advtemplate advtable advcode editimage tableofcontents powerpaste tinymcespellchecker autocorrect a11ychecker typography inlinecss template',
             toolbar: 'undo redo | fontfamily fontsize | bold italic underline strikethrough |  table  | align lineheight | tinycomments | checklist numlist bullist indent outdent | preview | export | template | inserttemplate | addtemplate',
+            content_css: 'C:/Users/david.miranda/Desktop/PDF/MiAplicacionPDf-master/wwwroot/css/estilos-tinymce.css',
             tinycomments_mode: 'embedded',
             tinycomments_author: 'Author name',
             mergetags_list: [
                 { value: 'First.Name', title: 'First Name' },
                 { value: 'Email', title: 'Email' },
             ],
-            ai_request: (request, respondWith) => respondWith.string(() => Promise.reject("See docs to implement AI Assistant")),
-            setup: function (editor) {
-                // Evento que se dispara al inicializarse el editor
-                editor.on('init', function () {
-                    // Contenido de la cabecera
-                    var headerContent = '<p>Fecha : MARTES, 22 DE OCTUBRE DE 2023 RSV729551072<br>Paciente : reter Paterno 1428634 Materno 1428634<br>Edad : 70 A&Ntilde;OS Fecha de Nacimiento : 03/OCT/1953<br>Sexo : FEMENINO M&eacute;dico solicitante : AQC<br>Sucursal : CULIACAN<br>Nombre del estudio : ULTRASONIDO HIGADO Y VIAS BILIARES</p>';
+            advtemplate_templates: [
+                {
+                    title: 'Template 1',
+                    content: `Este es mi ${nombre}`,
+                },
+                {
+                    title: 'Category 2',
+                    items: [
+                        {
+                            title: 'Template 2.1',
+                            content: 'Template 2.1 content'
+                        },
+                        {
+                            title: 'Template 2.2',
+                            content: 'Template 2.2 content'
+                        }
+                    ]
+                }
+            ],
 
-                   
+            // ai_request: (request, respondWith) => respondWith.string(() => Promise.reject("See docs to implement AI Assistant")),
+            // setup: function (editor) {
+            //     // Evento que se dispara al inicializarse el editor
+            //     editor.on('init', function () {
+            //         // Contenido de la cabecera
+            //         var headerContent = '<p style="margin: 0cm; line-height: normal; font-size: 11pt; font-family: Calibri, sans-serif;"><strong><span style="font-size: 10.0pt; font-family: Arial-BoldMT;">Fecha : </span></strong><span style="font-size: 9.0pt; font-family: ArialMT;">MARTES, 17 DE OCTUBRE DE 2023 </span><span style="font-size: 10.0pt; font-family: IDAutomationHC39M;">*RSV729551072*</span></p><p style="margin: 0cm; line-height: normal; font-size: 11pt; font-family: Calibri, sans-serif;"><strong><span style="font-size: 10.0pt; font-family: Arial-BoldMT;">Paciente : </span></strong><span style="font-size: 9.0pt; font-family: ArialMT;">TERESA Paterno 1428634 Materno 1428634</span></p><p style="margin: 0cm; line-height: normal; font-size: 11pt; font-family: Calibri, sans-serif;"><strong><span style="font-size: 10.0pt; font-family: Arial-BoldMT;">Edad : </span></strong><span style="font-size: 9.0pt; font-family: ArialMT;">70 A&Ntilde;OS </span><strong><span style="font-size: 10.0pt; font-family: Arial-BoldMT;">Fecha de Nacimiento : </span></strong><span style="font-size: 9.0pt; font-family: ArialMT;">03/OCT/1953</span></p><p style="margin: 0cm; line-height: normal; font-size: 11pt; font-family: Calibri, sans-serif;"><strong><span style="font-size: 10.0pt; font-family: Arial-BoldMT;">Sexo : </span></strong><span style="font-size: 9.0pt; font-family: ArialMT;">FEMENINO </span><strong><span style="font-size: 10.0pt; font-family: Arial-BoldMT;">M&eacute;dico solicitante : </span></strong><span style="font-size: 9.0pt; font-family: ArialMT;">AQC</span></p><p style="margin: 0cm; line-height: normal; font-size: 11pt; font-family: Calibri, sans-serif;"><strong><span style="font-size: 10.0pt; font-family: Arial-BoldMT;">Sucursal : </span></strong><span style="font-size: 9.0pt; font-family: ArialMT;">CULIACAN</span></p><p style="margin: 0cm 1.3pt 0cm 0cm; text-align: justify; line-height: normal; font-size: 11pt; font-family: Calibri, sans-serif;"><strong><span style="font-size: 10.0pt; font-family: Arial-BoldMT;">Nombre del estudio : </span></strong><span style="font-size: 9.0pt; font-family: ArialMT;">ULTRASONIDO HIGADO Y VIAS BILIARES</span></p>'
 
-                    // Contenido del editor
-                    var mainContent = editor.getContent();
+            //         // Contenido del pie de página
+            //         var footerContent = '<div style="position: absolute; bottom: 10px; width: 100%; ">FIRMA Y NOMBRE DEL DOCTOR</div>';
 
+            //         // Contenido del editor
+            //         var mainContent = editor.getContent();
 
-                    // Contenido del pie de página
-                    var footerContent = '<div style="position: absolute; bottom: 10px; width: 100%; text-align: center;">Este es mi pie de página</div>';
+            //         // Unir contenido: cabecera + contenido principal + pie de página
+            //         var fullContent = headerContent + mainContent + footerContent;
 
-                    // Unir contenido: cabecera + contenido principal + pie de página
-                    var fullContent = headerContent + mainContent + footerContent;
-
-                    // Establecer el contenido completo en el editor
-                    editor.setContent(fullContent);
-                });
-            }
-
-
+            //         // Establecer el contenido completo en el editor
+            //         editor.setContent(fullContent);
+            //     });
+            // }
         });
+ 
     </script>
 }
